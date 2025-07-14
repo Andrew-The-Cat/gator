@@ -74,7 +74,7 @@ func handlerLogin (s *state, cmd command) error {
 
 func handlerRegister (s *state, cmd command) error {
 	if len(cmd.args) != 1  {
-		return fmt.Errorf("register command requires a username")
+		return fmt.Errorf("command requires a username")
 	}
 
 	user, err := s.db.CreateUser(context.Background(), database.CreateUserParams{
@@ -134,6 +134,30 @@ func handlerUsers (s *state, cmd command) error {
 	return nil
 }
 
+func handlerAddFeed (s *state, cmd command) error {
+	if len(cmd.args) != 2 {
+		return fmt.Errorf("command requires a name and a url")
+	}
+	
+	user, err := s.db.GetUser(context.Background(), s.cfg.User_name)
+	if err != nil {
+		return fmt.Errorf("error retrieving current user: %v", err)
+	}
+
+	res, err := s.db.AddFeed(context.Background(), database.AddFeedParams{
+		Name: cmd.args[0],
+		Url: cmd.args[1],
+		UserID: user.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("error adding the feed to the database: %v", err)
+	}
+
+	fmt.Println("feed successfully added")
+	fmt.Printf("\tname: %v | url: %v\n", res.Name, res.Url)
+	return nil
+}
+
 /*
 ======================================================
 
@@ -178,6 +202,7 @@ func main() {
 		cmds.register("reset", handlerReset)
 		cmds.register("users", handlerUsers)
 		cmds.register("agg", handlerAgg)
+		cmds.register("addfeed", handlerAddFeed)
 
 		args := os.Args
 		if len(args) < 2 {
