@@ -14,7 +14,7 @@ import (
 type Feed struct {
 	Name   string
 	Url    string
-	UserID uuid.NullUUID
+	UserID uuid.UUID
 }
 
 type User struct {

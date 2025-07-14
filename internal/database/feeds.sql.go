@@ -24,7 +24,7 @@ RETURNING name, url, user_id
 type AddFeedParams struct {
 	Name   string
 	Url    string
-	UserID uuid.NullUUID
+	UserID uuid.UUID
 }
 
 func (q *Queries) AddFeed(ctx context.Context, arg AddFeedParams) (Feed, error) {
