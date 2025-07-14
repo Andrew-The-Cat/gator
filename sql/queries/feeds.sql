@@ -1,3 +1,4 @@
+-- name: AddFeed :one
 INSERT INTO feeds (name, url, user_id) 
 VALUES (
     $1,
