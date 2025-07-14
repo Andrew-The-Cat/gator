@@ -106,6 +106,16 @@ func handlerReset (s *state, cmd command) error {
 	return nil
 }
 
+func handlerAgg (s *state, cmd command) error {
+	feed, err := rss.FetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
+	if err != nil {
+		return fmt.Errorf("couldn't fetch feed: %v", err)
+	}
+
+	fmt.Println(feed)
+	return nil
+}
+
 func handlerUsers (s *state, cmd command) error {
 	users, err := s.db.GetUsers(context.Background())
 	if err != nil {
@@ -167,6 +177,7 @@ func main() {
 		cmds.register("register", handlerRegister)
 		cmds.register("reset", handlerReset)
 		cmds.register("users", handlerUsers)
+		cmds.register("agg", handlerAgg)
 
 		args := os.Args
 		if len(args) < 2 {
