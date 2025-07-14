@@ -8,6 +8,7 @@ import (
 	"gator/internal/database"
 	"os"
 	"time"
+	"gator/internal/rss"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
@@ -105,6 +106,24 @@ func handlerReset (s *state, cmd command) error {
 	return nil
 }
 
+func handlerUsers (s *state, cmd command) error {
+	users, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, user := range users {
+		fmt.Printf("* %v", user.Name)
+		if user.Name == s.cfg.User_name {
+			fmt.Printf(" (current)")
+		}
+
+		fmt.Print("\n")
+	}
+
+	return nil
+}
+
 /*
 ======================================================
 
@@ -147,6 +166,7 @@ func main() {
 		cmds.register("login", handlerLogin)
 		cmds.register("register", handlerRegister)
 		cmds.register("reset", handlerReset)
+		cmds.register("users", handlerUsers)
 
 		args := os.Args
 		if len(args) < 2 {
