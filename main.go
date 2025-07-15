@@ -170,7 +170,7 @@ func handlerFeeds (s *state, cmd command) error {
 	}
 
 	for _, row := range data {
-		fmt.Printf(" * %v - %v: %v\n", row.UserName.String, row.Name.String, row.Url.String)
+		fmt.Printf(" * %v - %v: %v\n", row.UserName.String, row.Name, row.Url)
 	}
 
 	return nil

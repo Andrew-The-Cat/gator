@@ -46,13 +46,13 @@ func (q *Queries) FeedsReset(ctx context.Context) error {
 
 const getFeeds = `-- name: GetFeeds :many
 SELECT feeds.name, feeds.url, users.name as user_name FROM feeds
-FULL JOIN users
+LEFT JOIN users
 ON users.id = feeds.user_id
 `
 
 type GetFeedsRow struct {
-	Name     sql.NullString
-	Url      sql.NullString
+	Name     string
+	Url      string
 	UserName sql.NullString
 }
 
