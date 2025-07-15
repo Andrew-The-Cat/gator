@@ -35,6 +35,15 @@ func (q *Queries) AddFeed(ctx context.Context, arg AddFeedParams) (Feed, error) 
 	return i, err
 }
 
+const feedsReset = `-- name: FeedsReset :exec
+DELETE FROM feeds *
+`
+
+func (q *Queries) FeedsReset(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, feedsReset)
+	return err
+}
+
 const getFeeds = `-- name: GetFeeds :many
 SELECT feeds.name, feeds.url, users.name as user_name FROM feeds
 FULL JOIN users

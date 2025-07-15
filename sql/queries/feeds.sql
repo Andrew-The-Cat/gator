@@ -11,3 +11,6 @@ RETURNING *;
 SELECT feeds.name, feeds.url, users.name as user_name FROM feeds
 FULL JOIN users
 ON users.id = feeds.user_id;
+
+-- name: FeedsReset :exec
+DELETE FROM feeds *;

@@ -98,9 +98,14 @@ func handlerRegister (s *state, cmd command) error {
 }
 
 func handlerReset (s *state, cmd command) error {
-	err := s.db.Reset(context.Background())
+	err := s.db.UsersReset(context.Background())
 	if err != nil {
 		return fmt.Errorf("couldn't delete users: %v", err)
+	}
+
+	err = s.db.FeedsReset(context.Background())
+	if err != nil {
+		return fmt.Errorf("couldn't delete feeds: %v", err)
 	}
 
 	return nil
