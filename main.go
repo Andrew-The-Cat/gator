@@ -150,6 +150,9 @@ func handlerAddFeed (s *state, cmd command) error {
 	}
 
 	res, err := s.db.AddFeed(context.Background(), database.AddFeedParams{
+		ID: uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 		Name: cmd.args[0],
 		Url: cmd.args[1],
 		UserID: user.ID,
