@@ -108,6 +108,11 @@ func handlerReset (s *state, cmd command) error {
 		return fmt.Errorf("couldn't delete feeds: %v", err)
 	}
 
+	err = s.db.FeedFollowsReset(context.Background())
+	if err != nil {
+		return fmt.Errorf("couldn't delete feed followdL: %v", err)
+	}
+
 	return nil
 }
 
@@ -161,6 +166,17 @@ func handlerAddFeed (s *state, cmd command) error {
 		return fmt.Errorf("error adding the feed to the database: %v", err)
 	}
 
+	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID: uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID: user.ID,
+		FeedID: res.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("error creating feed follow: %v", err)
+	}
+
 	fmt.Println("Successfuly added feed:")
 	fmt.Printf("\tname: %v | url: %v\n", res.Name, res.Url)
 	return nil
@@ -207,7 +223,7 @@ func handlerFollow (s *state, cmd command) error {
 	}
 
 	fmt.Printf("Successfuly followed feed for user %v:\n", s.cfg.User_name)
-	fmt.Printf("\t* name: %v | url: %v | created by: %v\n", response.FeedName, cmd.args, response.UserName)
+	fmt.Printf("\t* name: %v | url: %v\n", response.FeedName, cmd.args)
 	return nil
 }
 
@@ -218,7 +234,7 @@ func handlerFollowing (s *state, cmd command) error {
 	}
 
 	for _, row := range data {
-		fmt.Printf(" * %v: %v created by %v", row.FeedName, row.FeedUrl, row.UserName)
+		fmt.Printf(" * %v: %v\n", row.FeedName, row.FeedUrl)
 	}
 	return nil
 }

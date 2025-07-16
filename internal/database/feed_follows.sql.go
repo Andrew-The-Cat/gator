@@ -84,7 +84,6 @@ func (q *Queries) FeedFollowsReset(ctx context.Context) error {
 
 const getFeedFollowsForUser = `-- name: GetFeedFollowsForUser :many
 SELECT
-users.name AS user_name,
 feeds.name AS feed_name,
 feeds.url AS feed_url
 FROM feed_follows
@@ -96,7 +95,6 @@ WHERE users.name = $1
 `
 
 type GetFeedFollowsForUserRow struct {
-	UserName string
 	FeedName string
 	FeedUrl  string
 }
@@ -110,7 +108,7 @@ func (q *Queries) GetFeedFollowsForUser(ctx context.Context, name string) ([]Get
 	var items []GetFeedFollowsForUserRow
 	for rows.Next() {
 		var i GetFeedFollowsForUserRow
-		if err := rows.Scan(&i.UserName, &i.FeedName, &i.FeedUrl); err != nil {
+		if err := rows.Scan(&i.FeedName, &i.FeedUrl); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

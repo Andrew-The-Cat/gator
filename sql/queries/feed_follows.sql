@@ -24,7 +24,6 @@ DELETE FROM feed_follows *;
 
 -- name: GetFeedFollowsForUser :many
 SELECT
-users.name AS user_name,
 feeds.name AS feed_name,
 feeds.url AS feed_url
 FROM feed_follows
