@@ -211,6 +211,18 @@ func handlerFollow (s *state, cmd command) error {
 	return nil
 }
 
+func handlerFollowing (s *state, cmd command) error {
+	data, err := s.db.GetFeedFollowsForUser(context.Background(), s.cfg.User_name)
+	if err != nil {
+		return fmt.Errorf("error retrieving feed follows: %v", err)
+	}
+
+	for _, row := range data {
+		fmt.Printf(" * %v: %v created by %v", row.FeedName, row.FeedUrl, row.UserName)
+	}
+	return nil
+}
+
 /*
 ======================================================
 
@@ -258,6 +270,7 @@ func main() {
 		cmds.register("addfeed", handlerAddFeed)
 		cmds.register("feeds", handlerFeeds)
 		cmds.register("follow", handlerFollow)
+		cmds.register("following", handlerFollowing)
 
 		args := os.Args
 		if len(args) < 2 {

@@ -22,8 +22,14 @@ ON users.id = inserted_feed_follow.user_id;
 -- name: FeedFollowsReset :exec
 DELETE FROM feed_follows *;
 
--- name: GetFeedFollows :many
-SELECT feed_follows.* FROM feed_follows
+-- name: GetFeedFollowsForUser :many
+SELECT
+users.name AS user_name,
+feeds.name AS feed_name,
+feeds.url AS feed_url
+FROM feed_follows
 INNER JOIN users
 ON users.id = feed_follows.user_id
+INNER JOIN feeds
+ON feeds.id = feed_follows.feed_id
 WHERE users.name = $1;
