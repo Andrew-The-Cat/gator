@@ -92,7 +92,7 @@ func handlerRegister (s *state, cmd command) error {
 	}
 
 	s.cfg.SetUser(cmd.args[0])
-	fmt.Println("User created successfuly:")
+	fmt.Println("Successfuly created user:")
 	fmt.Printf("\tID: %v | created_at: %v | updated_at: %v | name: %v\n", user.ID, user.CreatedAt, user.UpdatedAt.Time, user.Name)
 	return nil
 }
@@ -161,7 +161,7 @@ func handlerAddFeed (s *state, cmd command) error {
 		return fmt.Errorf("error adding the feed to the database: %v", err)
 	}
 
-	fmt.Println("feed successfully added")
+	fmt.Println("Successfuly added feed:")
 	fmt.Printf("\tname: %v | url: %v\n", res.Name, res.Url)
 	return nil
 }
@@ -173,9 +173,41 @@ func handlerFeeds (s *state, cmd command) error {
 	}
 
 	for _, row := range data {
-		fmt.Printf(" * %v - %v: %v\n", row.UserName.String, row.Name, row.Url)
+		fmt.Printf(" * %v - %v: %v\n", row.UserName, row.Name, row.Url)
 	}
 
+	return nil
+}
+
+func handlerFollow (s *state, cmd command) error {
+	if len(cmd.args) != 1 {
+		return fmt.Errorf("command requires a url")
+	}
+
+	targetFeed, err := s.db.GetFeedByUrl(context.Background() ,cmd.args[0])
+	if err != nil {
+		return fmt.Errorf("error retrieving requested feed: %v", err)
+	}
+
+	curUser, err := s.db.GetUser(context.Background(), s.cfg.User_name)
+	if err != nil {
+		return fmt.Errorf("error retrieving current user: %v", err)
+	}
+
+	response, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID: uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID: curUser.ID,
+		FeedID: targetFeed.ID,
+	})
+
+	if err != nil {
+		return fmt.Errorf("error creating feed follow: %v", err)
+	}
+
+	fmt.Printf("Successfuly followed feed for user %v:\n", s.cfg.User_name)
+	fmt.Printf("\t* name: %v | url: %v | created by: %v\n", response.FeedName, cmd.args, response.UserName)
 	return nil
 }
 
@@ -225,6 +257,7 @@ func main() {
 		cmds.register("agg", handlerAgg)
 		cmds.register("addfeed", handlerAddFeed)
 		cmds.register("feeds", handlerFeeds)
+		cmds.register("follow", handlerFollow)
 
 		args := os.Args
 		if len(args) < 2 {

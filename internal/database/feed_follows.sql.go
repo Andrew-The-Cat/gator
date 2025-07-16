@@ -38,16 +38,16 @@ type CreateFeedFollowParams struct {
 	ID        uuid.UUID
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	UserID    uuid.NullUUID
-	FeedID    uuid.NullUUID
+	UserID    uuid.UUID
+	FeedID    uuid.UUID
 }
 
 type CreateFeedFollowRow struct {
 	ID        uuid.UUID
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	UserID    uuid.NullUUID
-	FeedID    uuid.NullUUID
+	UserID    uuid.UUID
+	FeedID    uuid.UUID
 	FeedName  string
 	UserName  string
 }

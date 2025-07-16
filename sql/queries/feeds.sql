@@ -12,8 +12,12 @@ RETURNING *;
 
 -- name: GetFeeds :many
 SELECT feeds.name, feeds.url, users.name as user_name FROM feeds
-LEFT JOIN users
+INNER JOIN users
 ON users.id = feeds.user_id;
+
+-- name: GetFeedByUrl :one
+SELECT * FROM feeds
+WHERE url = $1;
 
 -- name: FeedsReset :exec
 DELETE FROM feeds *;
