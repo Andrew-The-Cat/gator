@@ -192,7 +192,7 @@ func handlerFeeds (s *state, cmd command) error {
 
 func handlerFollow (s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 1 {
-		return fmt.Errorf("command requires a url")
+		return fmt.Errorf("command requires the url of the feed you want to follow")
 	}
 
 	targetFeed, err := s.db.GetFeedByUrl(context.Background() ,cmd.args[0])
@@ -226,6 +226,23 @@ func handlerFollowing (s *state, cmd command, user database.User) error {
 	for _, row := range data {
 		fmt.Printf(" * %v: %v\n", row.FeedName, row.FeedUrl)
 	}
+	return nil
+}
+
+func handlerUnfollow (s *state, cmd command, user database.User) error {
+	if len(cmd.args) != 1 {
+		return fmt.Errorf("command requires the url of the feed you want to unfollow")
+	}
+
+	err := s.db.DeleteFeedFollowForUser(context.Background(), database.DeleteFeedFollowForUserParams{
+		UserID: user.ID,
+		Url: cmd.args[0],
+	})
+	if err != nil {
+		return fmt.Errorf("error deleting feed follow: %v", err)
+	}
+
+	fmt.Println("Successfully unfollowed feed")
 	return nil
 }
 
@@ -296,6 +313,7 @@ func main() {
 		cmds.register("feeds", handlerFeeds)
 		cmds.register("follow", middlewareLoggedIn(handlerFollow))
 		cmds.register("following", middlewareLoggedIn(handlerFollowing))
+		cmds.register("unfollow", middlewareLoggedIn(handlerUnfollow))
 
 		args := os.Args
 		if len(args) < 2 {
