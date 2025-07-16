@@ -144,14 +144,9 @@ func handlerUsers (s *state, cmd command) error {
 	return nil
 }
 
-func handlerAddFeed (s *state, cmd command) error {
+func handlerAddFeed (s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 2 {
 		return fmt.Errorf("command requires a name and a url")
-	}
-	
-	user, err := s.db.GetUser(context.Background(), s.cfg.User_name)
-	if err != nil {
-		return fmt.Errorf("error retrieving current user: %v", err)
 	}
 
 	res, err := s.db.AddFeed(context.Background(), database.AddFeedParams{
@@ -195,7 +190,7 @@ func handlerFeeds (s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollow (s *state, cmd command) error {
+func handlerFollow (s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 1 {
 		return fmt.Errorf("command requires a url")
 	}
@@ -205,16 +200,11 @@ func handlerFollow (s *state, cmd command) error {
 		return fmt.Errorf("error retrieving requested feed: %v", err)
 	}
 
-	curUser, err := s.db.GetUser(context.Background(), s.cfg.User_name)
-	if err != nil {
-		return fmt.Errorf("error retrieving current user: %v", err)
-	}
-
 	response, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
 		ID: uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		UserID: curUser.ID,
+		UserID: user.ID,
 		FeedID: targetFeed.ID,
 	})
 
@@ -227,8 +217,8 @@ func handlerFollow (s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollowing (s *state, cmd command) error {
-	data, err := s.db.GetFeedFollowsForUser(context.Background(), s.cfg.User_name)
+func handlerFollowing (s *state, cmd command, user database.User) error {
+	data, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
 	if err != nil {
 		return fmt.Errorf("error retrieving feed follows: %v", err)
 	}
@@ -237,6 +227,25 @@ func handlerFollowing (s *state, cmd command) error {
 		fmt.Printf(" * %v: %v\n", row.FeedName, row.FeedUrl)
 	}
 	return nil
+}
+
+/*
+======================================================
+
+		Function wrappers
+
+======================================================
+*/
+
+func middlewareLoggedIn(handler func(s *state, cmd command, user database.User) error) func(*state, command) error {
+	return func (s *state, cmd command) error {
+		user, err := s.db.GetUser(context.Background(), s.cfg.User_name)
+		if err != nil {
+			return fmt.Errorf("error retrieving current user: %v", err)
+		}
+
+		return handler(s, cmd, user)
+	}
 }
 
 /*
@@ -283,10 +292,10 @@ func main() {
 		cmds.register("reset", handlerReset)
 		cmds.register("users", handlerUsers)
 		cmds.register("agg", handlerAgg)
-		cmds.register("addfeed", handlerAddFeed)
+		cmds.register("addfeed", middlewareLoggedIn(handlerAddFeed))
 		cmds.register("feeds", handlerFeeds)
-		cmds.register("follow", handlerFollow)
-		cmds.register("following", handlerFollowing)
+		cmds.register("follow", middlewareLoggedIn(handlerFollow))
+		cmds.register("following", middlewareLoggedIn(handlerFollowing))
 
 		args := os.Args
 		if len(args) < 2 {
