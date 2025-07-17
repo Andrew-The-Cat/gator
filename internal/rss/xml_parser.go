@@ -66,3 +66,15 @@ func cleanFeed(feed *RSSFeed) error {
 
 	return nil
 }
+
+func (f RSSFeed) PrintFeed() error {
+	fmt.Println("\n========================================")
+	fmt.Printf("\t%v:\n", f.Channel.Title)
+	fmt.Printf("\t\t%v\n\n", f.Channel.Description)
+
+	for _, item := range f.Channel.Item {
+		fmt.Printf("\t*\t%v (%v) - \n\t\t%v\n\n", item.Title, item.PubDate, item.Description)
+	}
+
+	return nil
+}

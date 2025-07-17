@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"gator/internal/config"
 	"gator/internal/database"
+	"gator/internal/rss"
 	"os"
 	"time"
-	"gator/internal/rss"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
@@ -117,13 +117,21 @@ func handlerReset (s *state, cmd command) error {
 }
 
 func handlerAgg (s *state, cmd command) error {
-	feed, err := rss.FetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
-	if err != nil {
-		return fmt.Errorf("couldn't fetch feed: %v", err)
+	if len(cmd.args) != 1 {
+		return fmt.Errorf("command requires a time between requests given in the format (1-9)[s|m|h]")
 	}
 
-	fmt.Println(feed)
-	return nil
+	dur, err := time.ParseDuration(cmd.args[0])
+	if err != nil {
+		return fmt.Errorf("error occured when trying to parse duration: %v", err)
+	}
+
+	fmt.Printf("Attempting to collect feeds every %v\n", dur)
+
+	ticker := time.NewTicker(dur)
+	for ; ; <-ticker.C {
+		scrapeFeeds(s)
+	}
 }
 
 func handlerUsers (s *state, cmd command) error {
@@ -249,7 +257,7 @@ func handlerUnfollow (s *state, cmd command, user database.User) error {
 /*
 ======================================================
 
-		Function wrappers
+		Helper functions
 
 ======================================================
 */
@@ -263,6 +271,34 @@ func middlewareLoggedIn(handler func(s *state, cmd command, user database.User) 
 
 		return handler(s, cmd, user)
 	}
+}
+
+func scrapeFeeds(s *state) error {
+	feed, err := s.db.GetNextFeedToFetch(context.Background())
+	if err != nil {
+		return err
+	}
+
+	res, err := s.db.MarkFeedFetched(context.Background(), database.MarkFeedFetchedParams{
+		ID: feed.ID,
+		LastFetchedAt: sql.NullTime{
+			Valid: true,
+			Time: time.Now(),
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Attempting to fetch feed at %v\n", res.Url)
+
+	fetched_items, err := rss.FetchFeed(context.Background(), res.Url)
+	if err != nil {
+		return err
+	}
+
+	fetched_items.PrintFeed()
+	return nil
 }
 
 /*
