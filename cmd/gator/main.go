@@ -4,14 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"gator/internal/config"
-	"gator/internal/database"
-	"gator/internal/rss"
+	"github.com/Andrew-The-Cat/gator/internal/config"
+	"github.com/Andrew-The-Cat/gator/internal/database"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-
+	"github.com/Andrew-The-Cat/gator/internal/rss"
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
